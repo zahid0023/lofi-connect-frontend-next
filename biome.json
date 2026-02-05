@@ -9,6 +9,7 @@
     "ignoreUnknown": true,
     "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
   },
+
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -19,9 +20,28 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noArrayIndexKey": "off",
+        "noDoubleEquals": "off"
+      },
+      "a11y": {
+        "useSemanticElements": "off"
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "fix": "safe",
+          "level": "error",
+          "options": {
+            "attributes": ["className", "classList"],
+            "functions": ["clsx", "cva", "tw", "twMerge", "cn", "twJoin", "tv"]
+          }
+        }
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
       }
     },
+
     "domains": {
       "next": "recommended",
       "react": "recommended"
