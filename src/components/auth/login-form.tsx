@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -16,6 +18,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { type LoginDto, loginDto } from "@/validations/auth.dto";
 
 export function LoginForm() {
+  const router = useRouter();
+
   const form = useForm<LoginDto>({
     resolver: zodResolver(loginDto),
     defaultValues: {
@@ -24,23 +28,35 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(data: LoginDto) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code className="text-muted-foreground">
-            {JSON.stringify(data, null, 2)}
-          </code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    });
+
+  async function onSubmit(data: LoginDto) {
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "*/*",
+        },
+        body: JSON.stringify({
+          user_name: data.email,
+          password: data.password,
+        }),
+      });
+
+      if (response.status === 200) {
+        const result = await response.json();
+        localStorage.setItem("access_token", result.token); // store JWT
+        toast.success("Login successful");
+        router.push("/portal"); // ✅ redirect here
+        return;
+      }
+
+      const error = await response.json().catch(() => null);
+      toast.error(error?.message || "Invalid credentials");
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to login. Try again.");
+    }
   }
 
   return (

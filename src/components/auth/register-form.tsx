@@ -5,6 +5,8 @@ import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -65,6 +67,8 @@ const calculatePasswordStrength = (password: string): PasswordStrength => {
 };
 
 export function RegisterForm() {
+  const router = useRouter();
+
   const form = useForm<RegisterDto>({
     resolver: zodResolver(registerDto),
     defaultValues: {
@@ -80,21 +84,46 @@ export function RegisterForm() {
     [password],
   );
 
-  function onSubmit(data: RegisterDto) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    });
+  async function onSubmit(data: RegisterDto) {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/v1/auth/registration/user",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*"
+          },
+          body: JSON.stringify({
+            user_name: data.email,
+            password: data.password,
+            confirm_password: data.password
+          }),
+        },
+      );
+      if (response.status === 201) {
+        toast.success("User create successful!!",
+          {
+            position: "bottom-right",
+            classNames: {
+              content: "flex flex-col gap-2",
+            },
+            style: {
+              "--border-radius": "calc(var(--radius)  + 4px)",
+            } as React.CSSProperties,
+          }
+        );
+        router.push("/login");
+        return;
+      }
+
+      // Handle non-201 responses
+      const errorBody = await response.json().catch(() => null);
+      toast.error(errorBody?.message || "Registration failed");
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong. Please try again.");
+    }
   }
 
   return (
