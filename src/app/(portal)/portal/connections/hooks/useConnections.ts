@@ -29,28 +29,6 @@ export function useConnections(userId?: string) {
 
   /* ------------------------- commands ------------------------- */
 
-  const connect = async () => {
-    setIsConnecting(true);
-
-    try {
-      const response = await fetch(
-        "http://localhost:8080/api/v1/authorization/init", {
-        method: "GET",
-        headers: {
-          Accept: "*/*"
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Server responded with " + response.status);
-      }
-
-      const data = await response.json();
-      console.log(data);
-    } catch (err) {
-    }
-  };
-
   const rotateKey = (connection: GHLConnection) => {
     const newKey = generateAPIKey("live");
     const now = new Date().toISOString();
@@ -145,7 +123,6 @@ export function useConnections(userId?: string) {
     connections,
     visibleKeys,
     isConnecting,
-    connect,
     rotateKey,
     generateKey,
     reauthorize,

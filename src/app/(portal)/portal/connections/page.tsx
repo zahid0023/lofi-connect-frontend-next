@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConnections } from "./hooks/useConnections";
 import { ConnectDialog } from "./components/ConnectDialog";
@@ -13,7 +13,6 @@ import { ApiKeyDialog } from "@/app/(portal)/portal/connections/components/ApiKe
 
 export default function ConnectionsPage() {
     const { user } = useAuth();
-    const router = useRouter();
     const searchParams = useSearchParams();
     const codeFromUrl = searchParams.get("code");
 
