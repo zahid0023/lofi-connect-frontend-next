@@ -12,7 +12,7 @@ interface RequestOptions<TBody = unknown> {
     retry?: boolean; // internal use for refresh retry
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 
 // Build URL with path variables and query params

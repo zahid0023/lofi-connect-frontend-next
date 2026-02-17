@@ -8,6 +8,8 @@ import { ApiKeyDialog } from '@/components/connections/ApiKeyDialog';
 import { AppKeyList } from '@/components/connections/app-key-list';
 import { AppKeyInfo } from '@/components/connections/app-key-card';
 import { AppKeyApi } from '@/lib/api/endpoints/app-key';
+import { ConnectDialog } from '@/components/connections/ConnectDialog';
+import { ConnectionInfoDialog } from '@/components/connections/ConnectInfoDialog';
 
 export default function ConnectionsPage() {
     const [generatedKey, setGeneratedKey] = useState<string | null>(null);
@@ -16,6 +18,12 @@ export default function ConnectionsPage() {
 
     const [appKeys, setAppKeys] = useState<AppKeyInfo[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [selectedKey, setSelectedKey] = useState<AppKeyInfo | null>(null);
+    const [showConnectDialog, setShowConnectDialog] = useState(false);
+    const [showInfoDialog, setShowInfoDialog] = useState(false);
+
+    const [connectOpen, setConnectOpen] = useState(false);
 
 
     const keys = async () => {
@@ -48,6 +56,16 @@ export default function ConnectionsPage() {
 
     const handleCopy = async (key: string) => {
         await navigator.clipboard.writeText(key);
+    };
+
+    const handleConnectClick = (key: AppKeyInfo) => {
+        setSelectedKey(key);
+
+        if (key.ghlConnection) {
+            setShowInfoDialog(true);
+        } else {
+            setShowConnectDialog(true);
+        }
     };
 
     return (
@@ -87,8 +105,24 @@ export default function ConnectionsPage() {
 
             {/* App Keys List */}
             <div>
-                <AppKeyList appKeys={appKeys} />
+                <AppKeyList
+                    appKeys={appKeys}
+                    onConnectClick={handleConnectClick}
+                />
             </div>
+
+            <ConnectDialog
+                open={showConnectDialog}
+                onOpenChange={setShowConnectDialog}
+                isConnecting={false}
+                appKeyId={selectedKey?.id}
+            />
+
+            <ConnectionInfoDialog
+                open={showInfoDialog}
+                onOpenChange={setShowInfoDialog}
+                keyInfo={selectedKey}
+            />
         </div>
     );
 }

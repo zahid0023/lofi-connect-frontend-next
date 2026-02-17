@@ -6,10 +6,12 @@ import { AppKeyCard, AppKeyInfo } from "@/components/connections/app-key-card";
 
 interface Props {
     appKeys: AppKeyInfo[];
+    onConnectClick: (key: AppKeyInfo) => void;
 }
 
 export function AppKeyList({
     appKeys,
+    onConnectClick
 }: Props) {
     if (appKeys.length === 0) {
         return (
@@ -31,6 +33,7 @@ export function AppKeyList({
                 <AppKeyCard
                     key={k.id}
                     apiKey={k}
+                    onConnectClick={() => onConnectClick(k)}
                 />
             ))}
         </div>

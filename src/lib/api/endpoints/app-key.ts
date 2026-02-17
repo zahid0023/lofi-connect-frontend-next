@@ -11,6 +11,15 @@ export interface GenerateAppKeyResponse {
     name: string;
 }
 
+interface GhlConnectionApiResponse {
+    company_id: string;
+    is_agency: boolean;
+    sub_account_id: string;
+    sub_account_name: string;
+    scopes: string;
+    user_id: string;
+}
+
 interface AppKeyApiResponse {
     id: number;
     app_key: string;
@@ -19,6 +28,8 @@ interface AppKeyApiResponse {
     status: "active" | "needs_reauth" | "disconnected";
     created_at: string;
     updated_at: string;
+
+    ghl_connection?: GhlConnectionApiResponse | null;
 }
 
 interface ListAppKeyApiWrapper {
@@ -32,7 +43,7 @@ export const AppKeyApi = {
             GenerateAppKeyRequest
         >(
             "POST",
-            "/app-keys/generate",
+            "/api/v1/app-keys/generate",
             {
                 body,
                 validStatus: [201],
@@ -58,7 +69,7 @@ export const AppKeyApi = {
             void
         >(
             "GET",
-            "/app-keys", {
+            "/api/v1/app-keys", {
             validStatus: [200]
         }
         );
@@ -71,6 +82,16 @@ export const AppKeyApi = {
             status: k.status,
             createdAt: k.created_at,
             updatedAt: k.updated_at,
+
+            ghlConnection: k.ghl_connection ? {
+                companyId: k.ghl_connection.company_id,
+                isAgency: k.ghl_connection.is_agency,
+                subAccountId: k.ghl_connection.sub_account_id,
+                subAccountName: k.ghl_connection.sub_account_name,
+                scopes: k.ghl_connection.scopes,
+                userId: k.ghl_connection.user_id,
+            } :
+                null
         }));
     },
 };

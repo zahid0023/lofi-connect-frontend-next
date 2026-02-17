@@ -18,7 +18,7 @@ export const AuthApi = {
             any,
             LoginRequest>(
                 "POST",
-                "/auth/login",
+                "/api/v1/auth/login",
                 {
                     body,
                     validStatus: [200, 201]
