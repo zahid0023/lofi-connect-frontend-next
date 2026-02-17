@@ -1,117 +1,112 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Field,
-  FieldError,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
-import { type LoginDto, loginDto } from "@/validations/auth.dto";
+import { useState } from "react";
+import { toast } from "sonner";
+import { AuthApi, LoginRequest } from "@/lib/api/endpoints/auth";
+import { useRouter } from "next/navigation";
 
-export function LoginForm() {
+export function LoginForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const form = useForm<LoginDto>({
-    resolver: zodResolver(loginDto),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
 
-
-  async function onSubmit(data: LoginDto) {
     try {
-      const response = await fetch("http://localhost:8080/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({
-          user_name: data.email,
-          password: data.password,
-        }),
-      });
+      const loginReq: LoginRequest = {
+        user_name: username,
+        password,
+      };
 
-      if (response.status === 200) {
-        const result = await response.json();
-        localStorage.setItem("access_token", result.token); // store JWT
-        toast.success("Login successful");
-        router.push("/portal"); // ✅ redirect here
-        return;
-      }
+      await AuthApi.login(loginReq);
 
-      const error = await response.json().catch(() => null);
-      toast.error(error?.message || "Invalid credentials");
-    } catch (err) {
-      console.error(err);
-      toast.error("Unable to login. Try again.");
+      toast.success("Login successful!");
+
+      // redirect to dashboard after successful login
+      router.push("/portal/dashboard");
+    } catch (err: any) {
+      toast.error(err?.message || "Login unsuccessful");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <FieldGroup className="gap-4">
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                aria-invalid={fieldState.invalid}
-                placeholder="john@example.com"
-                {...field}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <div className="flex items-center justify-between">
+    <div className={cn("flex flex-col gap-7", className)} {...props}>
+      <Card className="border-none shadow-none flex gap-11">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold">
+            Welcome back
+          </CardTitle>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleSubmit}>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="email@example.com"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required
+                />
+              </Field>
+
+              <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Link
-                  href="/forgot-password"
-                  className="text-primary text-sm hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                aria-invalid={fieldState.invalid}
-                placeholder="Enter your password"
-                autoComplete="off"
-                {...field}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-      </FieldGroup>
-      <Button
-        type="submit"
-        disabled={form.formState.isSubmitting}
-        className="mt-4 w-full"
-      >
-        {form.formState.isSubmitting && <Spinner />}
-        Sign in
-      </Button>
-    </form>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+              </Field>
+
+              <Field>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Signing in..." : "Sign in"}
+                </Button>
+
+                <FieldDescription className="text-center">
+                  Don&apos;t have an account? <a href="#">Sign up</a>
+                </FieldDescription>
+              </Field>
+            </FieldGroup>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
