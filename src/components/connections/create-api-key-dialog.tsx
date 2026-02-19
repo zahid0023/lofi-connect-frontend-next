@@ -21,7 +21,7 @@ interface Props {
     onSuccess: (generatedKey: string) => void;
 }
 
-export function AppKeyDialog({ open, initialName, onClose, onSuccess }: Props) {
+export function CreateApiKeyDialog({ open, initialName, onClose, onSuccess }: Props) {
     const [name, setName] = useState(initialName || "");
     const [loading, setLoading] = useState(false);
 

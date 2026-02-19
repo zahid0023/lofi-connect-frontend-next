@@ -4,12 +4,12 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AppKeyInfo } from "./app-key-card";
+import { ApiKeyInfo } from "@/components/connections/api-key-card";
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    keyInfo: AppKeyInfo | null;
+    keyInfo: ApiKeyInfo | null;
 }
 
 export function ConnectionInfoDialog({ open, onOpenChange, keyInfo }: Props) {
@@ -27,9 +27,15 @@ export function ConnectionInfoDialog({ open, onOpenChange, keyInfo }: Props) {
 
                 <div className="space-y-2 text-sm">
                     <p><b>Company ID:</b> {conn.companyId}</p>
+                    <p><b>Agency:</b> {conn.isAgency ? "Yes" : "No"}</p>
+                    {
+                        !conn.isAgency && (
+                            <p><b>Sub Account:</b> {conn.subAccountName} ({conn.subAccountId})</p>
+                        )
+                    }
                     <p><b>User ID:</b> {conn.userId}</p>
                     <p><b>Scopes:</b> {conn.scopes}</p>
-                    <p><b>Agency:</b> {conn.isAgency ? "Yes" : "No"}</p>
+
                 </div>
 
                 <DialogFooter>

@@ -1,15 +1,15 @@
 "use client";
 
+import { ApiKeyCard, ApiKeyInfo } from "@/components/connections/api-key-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link2 } from "lucide-react";
-import { AppKeyCard, AppKeyInfo } from "@/components/connections/app-key-card";
+import { Key } from "lucide-react";
 
 interface Props {
-    appKeys: AppKeyInfo[];
-    onConnectClick: (key: AppKeyInfo) => void;
+    appKeys: ApiKeyInfo[];
+    onConnectClick: (key: ApiKeyInfo) => void;
 }
 
-export function AppKeyList({
+export function ApiKeyList({
     appKeys,
     onConnectClick
 }: Props) {
@@ -17,10 +17,10 @@ export function AppKeyList({
         return (
             <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Link2 className="mb-4 h-12 w-12 text-muted-foreground" />
-                    <h3 className="mb-2 text-lg font-semibold">No connections yet</h3>
+                    <Key className="mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 text-lg font-semibold">No API Keys yet</h3>
                     <p className="mb-4 text-center text-muted-foreground">
-                        Connect your first GoHighLevel account to start using LofiConnect
+                        Create an app key to connect your GoHighLevel account and start syncing data.
                     </p>
                 </CardContent>
             </Card>
@@ -30,7 +30,7 @@ export function AppKeyList({
     return (
         <div className="grid gap-4">
             {appKeys.map(k => (
-                <AppKeyCard
+                <ApiKeyCard
                     key={k.id}
                     apiKey={k}
                     onConnectClick={() => onConnectClick(k)}

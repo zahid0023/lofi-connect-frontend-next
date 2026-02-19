@@ -17,11 +17,13 @@ interface Props {
     appKeyId?: string;
 }
 
-export function ConnectDialog({ open, onOpenChange, isConnecting, appKeyId }: Props) {
+export function GHLConnectDialog({ open, onOpenChange, isConnecting, appKeyId }: Props) {
 
     const handleConnect = () => {
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
         window.location.href =
-            `http://localhost:8080/api/v1/authorization/init?app-key-id=${appKeyId}`;
+            `${baseUrl}/api/v1/authorization/ghl/init?app-key-id=${appKeyId}`;
     };
 
     return (

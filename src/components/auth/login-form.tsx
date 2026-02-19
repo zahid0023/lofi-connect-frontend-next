@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,44 +17,51 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { toast } from "sonner";
-import { AuthApi, LoginRequest } from "@/lib/api/endpoints/auth";
+
+import Link from "next/link";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { AuthApi } from "@/lib/api/endpoints/auth";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const { id, value } = event.target;
+    setForm((prev) => ({ ...prev, [id]: value }));
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
-      const loginReq: LoginRequest = {
-        user_name: username,
-        password,
-      };
+      const res = await AuthApi.login(form);
 
-      await AuthApi.login(loginReq);
-
-      toast.success("Login successful!");
-
-      // redirect to dashboard after successful login
-      router.push("/portal/dashboard");
+      if (res.accessToken) {
+        toast.success("Login successful!");
+        // redirect to dashboard after successful login
+        router.push("/portal/dashboard");
+      }
     } catch (err: any) {
-      toast.error(err?.message || "Login unsuccessful");
+      toast.error(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div className={cn("flex flex-col gap-7", className)} {...props}>
@@ -71,25 +79,31 @@ export function LoginForm({
           <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="username">Email</FieldLabel>
                 <Input
-                  id="email"
+                  id="username"
                   type="email"
                   placeholder="email@example.com"
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
+                  value={form.username}
+                  onChange={handleChange}
                   required
                 />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <div className="flex items-center">
+                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <Link href="/forgot-password" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
+                    Forgot your password?
+                  </Link>
+                </div>
+
                 <Input
                   id="password"
                   type="password"
                   placeholder="Password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  value={form.password}
+                  onChange={handleChange}
                   required
                 />
               </Field>
@@ -100,13 +114,16 @@ export function LoginForm({
                 </Button>
 
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  <span>Don&apos;t have an account? </span>
+                  <Link href="/signup" className="text-blue-600 hover:underline">
+                    Sign up
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }

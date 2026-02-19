@@ -24,7 +24,7 @@ export interface GhlConnectionInfo {
     userId: string;
 }
 
-export interface AppKeyInfo {
+export interface ApiKeyInfo {
     id: string;
     name: string;
     key: string;
@@ -37,11 +37,11 @@ export interface AppKeyInfo {
 }
 
 interface Props {
-    apiKey: AppKeyInfo;
-    onConnectClick: (key: AppKeyInfo) => void;
+    apiKey: ApiKeyInfo;
+    onConnectClick: (key: ApiKeyInfo) => void;
 }
 
-export function AppKeyCard({
+export function ApiKeyCard({
     apiKey,
     onConnectClick
 }: Props) {
@@ -97,7 +97,9 @@ export function AppKeyCard({
                         <div className="flex items-center gap-1">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">Connections</Button>
+                                    <Button variant="outline">
+                                        Connections
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuItem

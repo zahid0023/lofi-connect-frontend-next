@@ -1,4 +1,4 @@
-import { AppKeyInfo } from "@/components/connections/app-key-card";
+import { ApiKeyInfo } from "@/components/connections/api-key-card";
 import { apiRequest } from "@/lib/api/client";
 
 export interface GenerateAppKeyRequest {
@@ -63,7 +63,7 @@ export const AppKeyApi = {
         return data;
     },
 
-    list: async (): Promise<AppKeyInfo[]> => {
+    list: async (): Promise<ApiKeyInfo[]> => {
         const res = await apiRequest<
             ListAppKeyApiWrapper,
             void

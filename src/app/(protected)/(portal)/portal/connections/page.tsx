@@ -3,28 +3,26 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Key } from 'lucide-react';
-import { AppKeyDialog } from '@/components/connections/AppKeyDialog';
-import { ApiKeyDialog } from '@/components/connections/ApiKeyDialog';
-import { AppKeyList } from '@/components/connections/app-key-list';
-import { AppKeyInfo } from '@/components/connections/app-key-card';
+import { ApiKeyDialog } from '@/components/connections/api-key-dialog';
 import { AppKeyApi } from '@/lib/api/endpoints/app-key';
-import { ConnectDialog } from '@/components/connections/ConnectDialog';
-import { ConnectionInfoDialog } from '@/components/connections/ConnectInfoDialog';
+import { ConnectionInfoDialog } from '@/components/connections/connection-info-dialog';
+import { toast } from 'sonner';
+import { CreateApiKeyDialog } from '@/components/connections/create-api-key-dialog';
+import { ApiKeyInfo } from '@/components/connections/api-key-card';
+import { ApiKeyList } from '@/components/connections/api-key-list';
+import { GHLConnectDialog } from '@/components/connections/ghl-connect-dialog';
 
 export default function ConnectionsPage() {
     const [generatedKey, setGeneratedKey] = useState<string | null>(null);
     const [showKeyDialog, setShowKeyDialog] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    const [appKeys, setAppKeys] = useState<AppKeyInfo[]>([]);
+    const [appKeys, setAppKeys] = useState<ApiKeyInfo[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const [selectedKey, setSelectedKey] = useState<AppKeyInfo | null>(null);
+    const [selectedKey, setSelectedKey] = useState<ApiKeyInfo | null>(null);
     const [showConnectDialog, setShowConnectDialog] = useState(false);
     const [showInfoDialog, setShowInfoDialog] = useState(false);
-
-    const [connectOpen, setConnectOpen] = useState(false);
-
 
     const keys = async () => {
         try {
@@ -56,9 +54,10 @@ export default function ConnectionsPage() {
 
     const handleCopy = async (key: string) => {
         await navigator.clipboard.writeText(key);
+        toast.success("API key copied to clipboard!");
     };
 
-    const handleConnectClick = (key: AppKeyInfo) => {
+    const handleConnectClick = (key: ApiKeyInfo) => {
         setSelectedKey(key);
 
         if (key.ghlConnection) {
@@ -87,8 +86,8 @@ export default function ConnectionsPage() {
                 </Button>
 
 
-                {/* Name Input Dialog */}
-                <AppKeyDialog
+                {/* Create Api Key and Name Input Dialog */}
+                <CreateApiKeyDialog
                     open={dialogOpen}
                     onClose={() => setDialogOpen(false)}
                     onSuccess={handleKeyGenerated}
@@ -105,13 +104,13 @@ export default function ConnectionsPage() {
 
             {/* App Keys List */}
             <div>
-                <AppKeyList
+                <ApiKeyList
                     appKeys={appKeys}
                     onConnectClick={handleConnectClick}
                 />
             </div>
 
-            <ConnectDialog
+            <GHLConnectDialog
                 open={showConnectDialog}
                 onOpenChange={setShowConnectDialog}
                 isConnecting={false}
