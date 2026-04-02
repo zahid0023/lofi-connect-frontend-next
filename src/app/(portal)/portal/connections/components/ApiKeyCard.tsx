@@ -58,7 +58,10 @@ export function ApiKeyCard({ apiKey, onCopy, onDelete }: Props) {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel className="text-xs">Connect using this key</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => initGhlConnection(apiKey.id)}>
+                                <DropdownMenuItem
+                                    onClick={() => !ghl && initGhlConnection(apiKey.id)}
+                                    disabled={!!ghl}
+                                >
                                     <Link2 className="mr-2 h-4 w-4" />
                                     Connect to GHL
                                     {ghl && <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-green-500" />}

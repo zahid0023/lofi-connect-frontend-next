@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useApiKeys } from "./hooks/useApiKeys";
 import { ApiKeyDialog } from "./components/ApiKeyDialog";
 import { ApiKeyList } from "./components/ApiKeyList";
+import { SubscribeDialog } from "./components/SubscribeDialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -17,14 +18,26 @@ export default function ConnectionsPage() {
     } = useApiKeys();
 
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [subscribeDialogOpen, setSubscribeDialogOpen] = useState(false);
     const [plainKey, setPlainKey] = useState<string | null>(null);
 
     const onCreateSubmit = async (name: string) => {
-        const key = await handleCreate(name);
-        if (key) {
+        try {
+            const key = await handleCreate(name);
+            if (key) {
+                setCreateDialogOpen(false);
+                setPlainKey(key);
+            }
+        } catch {
+            // Backend indicated no subscription — show subscribe dialog
             setCreateDialogOpen(false);
-            setPlainKey(key);
+            setSubscribeDialogOpen(true);
         }
+    };
+
+    const onSubscribed = () => {
+        setSubscribeDialogOpen(false);
+        setCreateDialogOpen(true);
     };
 
     return (
@@ -51,6 +64,13 @@ export default function ConnectionsPage() {
                 onDeleteKey={handleDelete}
             />
 
+            {/* Subscribe dialog — shown when backend rejects with no-subscription error */}
+            <SubscribeDialog
+                open={subscribeDialogOpen}
+                onClose={() => setSubscribeDialogOpen(false)}
+                onSubscribed={onSubscribed}
+            />
+
             {/* Create — name input */}
             <ApiKeyDialog
                 open={createDialogOpen}
@@ -67,7 +87,6 @@ export default function ConnectionsPage() {
                 onClose={() => setPlainKey(null)}
                 onCopy={copyToClipboard}
             />
-
         </div>
     );
 }

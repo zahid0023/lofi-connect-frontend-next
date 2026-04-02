@@ -43,7 +43,11 @@ export function useApiKeys() {
             setApiKeys(prev => [apiKey, ...prev]);
             toast.success("API key created");
             return apiKey.app_key;
-        } catch {
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "";
+            if (message.toLowerCase().includes("no active subscription")) {
+                throw err; // let the caller handle subscription errors
+            }
             toast.error("Failed to create API key");
             return null;
         }
