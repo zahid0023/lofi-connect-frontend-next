@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { type LoginDto, loginDto } from "@/validations/auth.dto";
+import { login } from "@/services/auth";
 
 export function LoginForm() {
   const router = useRouter();
@@ -31,31 +32,11 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginDto) {
     try {
-      const response = await fetch("http://localhost:8080/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({
-          user_name: data.email,
-          password: data.password,
-        }),
-      });
-
-      if (response.status === 200) {
-        const result = await response.json();
-        localStorage.setItem("access_token", result.token); // store JWT
-        toast.success("Login successful");
-        router.push("/portal"); // ✅ redirect here
-        return;
-      }
-
-      const error = await response.json().catch(() => null);
-      toast.error(error?.message || "Invalid credentials");
+      await login({ user_name: data.email, password: data.password });
+      toast.success("Login successful");
+      router.push("/portal");
     } catch (err) {
-      console.error(err);
-      toast.error("Unable to login. Try again.");
+      toast.error("Invalid credentials");
     }
   }
 

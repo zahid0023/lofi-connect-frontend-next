@@ -1,60 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
-import { useConnections } from "./hooks/useConnections";
-import { ConnectDialog } from "./components/ConnectDialog";
-import { RotateKeyDialog } from "./components/RotateKeyDialog";
-import { ConnectionList } from "./components/ConnectionList";
-import { GHLConnection } from "@/types";
-import { ConnectionNameDialog } from "@/app/(portal)/portal/connections/components/ConnectionNameDialog";
-import { ApiKeyDialog } from "@/app/(portal)/portal/connections/components/ApiKeyDialog";
+import { useState } from "react";
+import { useApiKeys } from "./hooks/useApiKeys";
+import { ApiKeyDialog } from "./components/ApiKeyDialog";
+import { ApiKeyList } from "./components/ApiKeyList";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function ConnectionsPage() {
-    const { user } = useAuth();
-    const searchParams = useSearchParams();
-    const codeFromUrl = searchParams.get("code");
-
     const {
-        connections,
-        visibleKeys,
-        isConnecting,
-        rotateKey,
-        generateKey,
-        reauthorize,
-        disconnect,
-        toggleKeyVisibility,
+        apiKeys,
+        isLoading,
+        handleCreate,
+        handleDelete,
         copyToClipboard,
-    } = useConnections(user?.id);
+    } = useApiKeys();
 
-    const [newCode, setNewCode] = useState<string | null>(null);
-    const [rotateTarget, setRotateTarget] = useState<GHLConnection | null>(null);
-    const [editConnection, setEditConnection] = useState<GHLConnection | null>(null);
-    const [newConnectionNameDialogOpen, setNewConnectionNameDialogOpen] = useState(false);
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [plainKey, setPlainKey] = useState<string | null>(null);
 
-    const [newApiKey, setNewApiKey] = useState<string | null>(null);
-    const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
-
-    // When the user comes back from OAuth with ?code=xxx
-    useEffect(() => {
-        if (codeFromUrl) {
-            setNewCode(codeFromUrl);
-            setNewConnectionNameDialogOpen(true); // <-- open the dialog
-
-            // Clean URL
-            const url = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, "", url);
+    const onCreateSubmit = async (name: string) => {
+        const key = await handleCreate(name);
+        if (key) {
+            setCreateDialogOpen(false);
+            setPlainKey(key);
         }
-    }, [codeFromUrl]);
-
-    const handleRotate = (connection: GHLConnection) => {
-        const key = rotateKey(connection);
-        setRotateTarget(null);
-    };
-
-    const handleGenerate = (connection: GHLConnection) => {
-        const key = generateKey(connection);
     };
 
     return (
@@ -62,71 +32,42 @@ export default function ConnectionsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold">Connections</h1>
+                    <h1 className="text-2xl font-bold">API Keys</h1>
                     <p className="text-muted-foreground">
-                        Manage your GoHighLevel account connections and API keys
+                        Manage API keys for your GoHighLevel connections
                     </p>
                 </div>
-
-                <ConnectDialog isConnecting={isConnecting} />
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New API Key
+                </Button>
             </div>
 
-            {/* Content */}
-            <ConnectionList
-                connections={connections}
-                visibleKeys={visibleKeys}
-                onToggleVisibility={toggleKeyVisibility}
+            <ApiKeyList
+                apiKeys={apiKeys}
+                isLoading={isLoading}
                 onCopy={copyToClipboard}
-                onRotateKey={c => setRotateTarget(c)}
-                onGenerateKey={handleGenerate}
-                onReauthorize={reauthorize}
-                onDisconnect={disconnect}
+                onCreateKey={() => setCreateDialogOpen(true)}
+                onDeleteKey={handleDelete}
             />
 
-            {/* Modals */}
-            {/* New Connection Name Dialog (after OAuth redirect) */}
-            <ConnectionNameDialog
-                open={newConnectionNameDialogOpen}
-                code={newCode}
-                onClose={() => {
-                    setNewConnectionNameDialogOpen(false);
-                    setNewCode(null);
-                }}
-                onSubmit={() => { }}
-                onSuccess={(appKey) => {
-                    setNewApiKey(appKey);
-                    setApiKeyDialogOpen(true);
-                }}
-            />
-
-            {/* Edit existing connection */}
-            <ConnectionNameDialog
-                open={!!editConnection}
-                initialName={editConnection?.name}
-                code={null} // editing does not need code
-                onClose={() => setEditConnection(null)}
-                onSubmit={() => {
-                    if (!editConnection) return;
-                    setEditConnection(null);
-                }}
-            />
-
-            <RotateKeyDialog
-                open={!!rotateTarget}
-                onCancel={() => setRotateTarget(null)}
-                onConfirm={() => rotateTarget && handleRotate(rotateTarget)}
-            />
-
-            {/* ✅ API Key Dialog */}
+            {/* Create — name input */}
             <ApiKeyDialog
-                open={apiKeyDialogOpen}
-                apiKey={newApiKey}
-                onClose={() => {
-                    setApiKeyDialogOpen(false);
-                    setNewApiKey(null);
-                }}
+                open={createDialogOpen}
+                apiKey={null}
+                onCreate={onCreateSubmit}
+                onClose={() => setCreateDialogOpen(false)}
                 onCopy={copyToClipboard}
             />
+
+            {/* Show plain key once after creation */}
+            <ApiKeyDialog
+                open={!!plainKey}
+                apiKey={plainKey}
+                onClose={() => setPlainKey(null)}
+                onCopy={copyToClipboard}
+            />
+
         </div>
     );
 }

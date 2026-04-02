@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Dialog,
     DialogContent,
@@ -16,13 +19,66 @@ interface Props {
     apiKey: string | null;
     onClose: () => void;
     onCopy: (key: string) => void;
+    onCreate?: (name: string) => void;
 }
 
-export function ApiKeyDialog({ open, apiKey, onClose, onCopy }: Props) {
-    if (!apiKey) return null;
+export function ApiKeyDialog({ open, apiKey, onClose, onCopy, onCreate }: Props) {
+    const [name, setName] = useState("");
+    const [copied, setCopied] = useState(false);
 
+    const handleClose = () => {
+        setName("");
+        setCopied(false);
+        onClose();
+    };
+
+    const handleCreate = () => {
+        if (!name.trim() || !onCreate) return;
+        onCreate(name.trim());
+        setName("");
+    };
+
+    // Create mode
+    if (!apiKey) {
+        return (
+            <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Key className="h-5 w-5 text-primary" />
+                            Create New API Key
+                        </DialogTitle>
+                        <DialogDescription>
+                            Give your API key a name to identify it later.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-2 py-2">
+                        <Label htmlFor="key-name">Key Name</Label>
+                        <Input
+                            id="key-name"
+                            placeholder="e.g. Production, My App"
+                            value={name}
+                            onChange={e => setName(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && handleCreate()}
+                        />
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={handleClose}>Cancel</Button>
+                        <Button onClick={handleCreate} disabled={!name.trim()}>
+                            <Key className="mr-2 h-4 w-4" />
+                            Create API Key
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    // Show mode
     return (
-        <Dialog open={open} onOpenChange={o => !o && onClose()}>
+        <Dialog open={open} onOpenChange={o => !o && handleClose()}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -40,7 +96,7 @@ export function ApiKeyDialog({ open, apiKey, onClose, onCopy }: Props) {
                 <div className="space-y-4 py-4">
                     <div className="flex items-center gap-2 rounded-lg border bg-muted p-3 font-mono text-sm">
                         <code className="flex-1 break-all">{apiKey}</code>
-                        <Button variant="ghost" size="icon" onClick={() => onCopy(apiKey)}>
+                        <Button variant="ghost" size="icon" onClick={() => { onCopy(apiKey); setCopied(true); }}>
                             <Copy className="h-4 w-4" />
                         </Button>
                     </div>
@@ -50,7 +106,7 @@ export function ApiKeyDialog({ open, apiKey, onClose, onCopy }: Props) {
                 </div>
 
                 <DialogFooter>
-                    <Button onClick={onClose}>I've saved my key</Button>
+                    <Button onClick={handleClose} disabled={!copied}>I've saved my key</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
