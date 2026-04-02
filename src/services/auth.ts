@@ -1,0 +1,34 @@
+import { api, setToken, clearToken } from "./api";
+
+export interface LoginRequest {
+    user_name: string;
+    password: string;
+}
+
+export interface LoginResponse {
+    token_type: string;
+    access_token: string;
+    refresh_token: string;
+}
+
+const REFRESH_TOKEN_KEY = "loficonnect_refresh_token";
+
+export const login = async (body: LoginRequest): Promise<LoginResponse> => {
+    const res = await api.post<LoginResponse>("/auth/login", body);
+    setToken(res.access_token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, res.refresh_token);
+    return res;
+};
+
+export const logout = (): void => {
+    clearToken();
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+};
+
+export const refreshToken = async (): Promise<string> => {
+    const refresh = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!refresh) throw new Error("No refresh token");
+    const res = await api.post<LoginResponse>("/auth/refresh", { refresh_token: refresh });
+    setToken(res.access_token);
+    return res.access_token;
+};

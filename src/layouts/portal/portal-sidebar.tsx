@@ -1,25 +1,32 @@
+"use client";
+
 import {
   BarChart3Icon,
   CreditCardIcon,
   LayoutDashboard,
   Link2Icon,
+  LogOut,
   SettingsIcon,
   WebhookIcon,
   ZapIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  SidebarMenuButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { SidebarMenuButtonActive } from "@/layouts/portal/sidebar-menu-button-active";
+import { logout } from "@/services/auth";
 
 const mainNavItems = [
   {
@@ -50,6 +57,13 @@ const accountNavItems = [
 ];
 
 export function PortalSidebar() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-14 justify-center border-b border-b-sidebar-border">
@@ -95,6 +109,16 @@ export function PortalSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-t-sidebar-border">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout} className="text-destructive hover:text-destructive">
+              <LogOut />
+              <span>Log out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

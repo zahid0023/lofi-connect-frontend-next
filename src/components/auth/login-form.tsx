@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -14,8 +16,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { type LoginDto, loginDto } from "@/validations/auth.dto";
+import { login } from "@/services/auth";
 
 export function LoginForm() {
+  const router = useRouter();
+
   const form = useForm<LoginDto>({
     resolver: zodResolver(loginDto),
     defaultValues: {
@@ -24,23 +29,15 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(data: LoginDto) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code className="text-muted-foreground">
-            {JSON.stringify(data, null, 2)}
-          </code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    });
+
+  async function onSubmit(data: LoginDto) {
+    try {
+      await login({ user_name: data.email, password: data.password });
+      toast.success("Login successful");
+      router.push("/portal");
+    } catch (err) {
+      toast.error("Invalid credentials");
+    }
   }
 
   return (

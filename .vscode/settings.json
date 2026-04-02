@@ -15,5 +15,11 @@
   "tailwindCSS.classFunctions": ["cva", "cn"],
   "files.associations": {
     "*.css": "tailwindcss"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   }
 }
