@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -9,8 +10,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Check, CheckCircle2, Loader2, Sparkles } from "lucide-react";
-import { getSubscriptionPlans, createTenantSubscription, SubscriptionPlan } from "@/services/subscriptions";
+import { Check, CheckCircle2, Mail, Sparkles } from "lucide-react";
+import { getSubscriptionPlans, SubscriptionPlan } from "@/services/subscriptions";
 import { toast } from "sonner";
 
 interface Props {
@@ -20,10 +21,10 @@ interface Props {
 }
 
 export function SubscribeDialog({ open, onClose, onSubscribed }: Props) {
+    const router = useRouter();
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
     const [isLoadingPlans, setIsLoadingPlans] = useState(false);
-    const [isSubscribing, setIsSubscribing] = useState(false);
 
     useEffect(() => {
         if (!open) return;
@@ -37,21 +38,10 @@ export function SubscribeDialog({ open, onClose, onSubscribed }: Props) {
             .finally(() => setIsLoadingPlans(false));
     }, [open]);
 
-    const handleSubscribe = async () => {
-        if (!selectedPlanId) return;
-        setIsSubscribing(true);
-        try {
-            await createTenantSubscription(selectedPlanId, true);
-            toast.success("Subscription activated!");
-            onSubscribed();
-        } catch {
-            toast.error("Failed to subscribe. Please try again.");
-        } finally {
-            setIsSubscribing(false);
-        }
+    const handleContactUs = () => {
+        onClose();
+        router.push("/portal/contact-subscription");
     };
-
-    const selectedPlan = plans.find(p => p.id === selectedPlanId);
 
     return (
         <Dialog open={open} onOpenChange={o => !o && onClose()}>
@@ -69,7 +59,7 @@ export function SubscribeDialog({ open, onClose, onSubscribed }: Props) {
                 <div className="py-2">
                     {isLoadingPlans ? (
                         <div className="flex items-center justify-center py-12">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            <span className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
                         </div>
                     ) : plans.length === 0 ? (
                         <p className="text-center text-sm text-muted-foreground py-8">
@@ -127,24 +117,12 @@ export function SubscribeDialog({ open, onClose, onSubscribed }: Props) {
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
-                    <Button variant="outline" onClick={onClose} disabled={isSubscribing}>
+                    <Button variant="outline" onClick={onClose}>
                         Cancel
                     </Button>
-                    <Button
-                        onClick={handleSubscribe}
-                        disabled={!selectedPlanId || isSubscribing || isLoadingPlans}
-                    >
-                        {isSubscribing ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Subscribing...
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Subscribe{selectedPlan ? ` to ${selectedPlan.name}` : ""}
-                            </>
-                        )}
+                    <Button onClick={handleContactUs} disabled={isLoadingPlans}>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Contact Us
                     </Button>
                 </div>
             </DialogContent>
