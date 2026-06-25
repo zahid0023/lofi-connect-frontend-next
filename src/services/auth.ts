@@ -11,6 +11,17 @@ export interface LoginResponse {
     refresh_token: string;
 }
 
+export interface RegisterRequest {
+    user_name: string;
+    password: string;
+    confirm_password: string;
+}
+
+export interface RegisterResponse {
+    success: boolean;
+    id: number;
+}
+
 const REFRESH_TOKEN_KEY = "loficonnect_refresh_token";
 
 export const login = async (body: LoginRequest): Promise<LoginResponse> => {
@@ -23,6 +34,10 @@ export const login = async (body: LoginRequest): Promise<LoginResponse> => {
 export const logout = (): void => {
     clearToken();
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+};
+
+export const register = async (body: RegisterRequest): Promise<RegisterResponse> => {
+    return api.post<RegisterResponse>("/auth/registration/user", body);
 };
 
 export const refreshToken = async (): Promise<string> => {

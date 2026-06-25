@@ -1,258 +1,107 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
-import { useMemo } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-
-import { Button } from "@/components/ui/button";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Field,
-  FieldError,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
-import { type RegisterDto, registerDto } from "@/validations/auth.dto";
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { register } from "@/services/auth"
 
-interface PasswordRequirement {
-  met: boolean;
-  text: string;
-}
+export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({
+    user_name: "",
+    password: "",
+    confirm_password: "",
+  })
 
-interface PasswordStrength {
-  score: number;
-  level: "weak" | "fair" | "good" | "strong";
-  color: string;
-  requirements: PasswordRequirement[];
-}
-
-const calculatePasswordStrength = (password: string): PasswordStrength => {
-  const requirements: PasswordRequirement[] = [
-    { met: password.length >= 8, text: "At least 8 characters" },
-    { met: /[a-z]/.test(password), text: "One lowercase letter" },
-    { met: /[A-Z]/.test(password), text: "One uppercase letter" },
-    {
-      met: /[0-9]/.test(password) || /[^a-zA-Z0-9]/.test(password),
-      text: "One number or special character",
-    },
-  ];
-
-  const metCount = requirements.filter((req) => req.met).length;
-  const score = (metCount / requirements.length) * 100;
-
-  let level: PasswordStrength["level"];
-  let color: string;
-
-  if (score <= 25) {
-    level = "weak";
-    color = "bg-destructive";
-  } else if (score <= 50) {
-    level = "fair";
-    color = "bg-warning";
-  } else if (score <= 75) {
-    level = "good";
-    color = "bg-primary";
-  } else {
-    level = "strong";
-    color = "bg-success";
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  return { score, level, color, requirements };
-};
-
-export function RegisterForm() {
-  const router = useRouter();
-
-  const form = useForm<RegisterDto>({
-    resolver: zodResolver(registerDto),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-    },
-  });
-
-  const password = form.watch("password");
-  const passwordStrength = useMemo(
-    () => calculatePasswordStrength(password || ""),
-    [password],
-  );
-
-  async function onSubmit(data: RegisterDto) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/v1/auth/registration/user",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "*/*"
-          },
-          body: JSON.stringify({
-            user_name: data.email,
-            password: data.password,
-            confirm_password: data.password
-          }),
-        },
-      );
-      if (response.status === 201) {
-        toast.success("User create successful!!",
-          {
-            position: "bottom-right",
-            classNames: {
-              content: "flex flex-col gap-2",
-            },
-            style: {
-              "--border-radius": "calc(var(--radius)  + 4px)",
-            } as React.CSSProperties,
-          }
-        );
-        router.push("/login");
-        return;
-      }
-
-      // Handle non-201 responses
-      const errorBody = await response.json().catch(() => null);
-      toast.error(errorBody?.message || "Registration failed");
+      await register(form)
+      toast.success("User registered successfully!")
+      router.push("/login")
     } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(err instanceof Error ? err.message : "Registration failed. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <FieldGroup className="gap-4">
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="name">Name</FieldLabel>
+    <Card {...props}>
+      <CardHeader>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>Enter your information below to create your account</CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="user_name">Email</FieldLabel>
               <Input
-                id="name"
-                aria-invalid={fieldState.invalid}
-                placeholder="John Doe"
-                {...field}
+                id="user_name"
+                name="user_name"
+                type="email"
+                placeholder="email@example.com"
+                value={form.user_name}
+                onChange={handleChange}
+                required
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldDescription>We'll use this to contact you. We will not share your email with anyone else.</FieldDescription>
             </Field>
-          )}
-        />
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                aria-invalid={fieldState.invalid}
-                placeholder="john@example.com"
-                {...field}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
+            <Field>
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Input
                 id="password"
-                aria-invalid={fieldState.invalid}
-                placeholder="Enter your password"
-                autoComplete="off"
-                {...field}
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                required
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              {password && (
-                <div
-                  id="password-strength"
-                  className="space-y-3"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        Password strength
-                      </span>
-                      <span
-                        className={
-                          passwordStrength.level === "strong"
-                            ? "font-medium text-success"
-                            : "text-muted-foreground"
-                        }
-                      >
-                        {passwordStrength.level.charAt(0).toUpperCase() +
-                          passwordStrength.level.slice(1)}
-                      </span>
-                    </div>
-                    <Progress
-                      value={passwordStrength.score}
-                      className={cn(
-                        `*:data-[slot='progress-indicator']:${passwordStrength.color}`,
-                      )}
-                      aria-label={`Password strength: ${passwordStrength.level}`}
-                    />
-                  </div>
-
-                  <ul
-                    className="space-y-1.5"
-                    aria-label="Password requirements"
-                  >
-                    {passwordStrength.requirements.map((req, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center gap-2 text-xs"
-                      >
-                        {req.met ? (
-                          <CheckCircle2Icon
-                            className="size-3.5 shrink-0 text-success"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <XCircleIcon
-                            className="size-3.5 shrink-0 text-muted-foreground"
-                            aria-hidden="true"
-                          />
-                        )}
-                        <span
-                          className={
-                            req.met
-                              ? "text-success transition-colors"
-                              : "text-muted-foreground"
-                          }
-                        >
-                          {req.text}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <FieldDescription>Must be at least 8 characters long.</FieldDescription>
             </Field>
-          )}
-        />
-      </FieldGroup>
-      <Button
-        type="submit"
-        disabled={form.formState.isSubmitting}
-        className="mt-4 w-full"
-      >
-        {form.formState.isSubmitting && <Spinner />}
-        Create account
-      </Button>
-    </form>
-  );
+            <Field>
+              <FieldLabel htmlFor="confirm_password">Confirm Password</FieldLabel>
+              <Input
+                id="confirm_password"
+                name="confirm_password"
+                type="password"
+                value={form.confirm_password}
+                onChange={handleChange}
+                required
+              />
+              <FieldDescription>Please confirm your password.</FieldDescription>
+            </Field>
+            <Field>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Creating Account…" : "Create Account"}
+              </Button>
+            </Field>
+          </FieldGroup>
+        </form>
+      </CardContent>
+    </Card>
+  )
 }

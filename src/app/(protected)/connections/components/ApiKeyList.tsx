@@ -9,7 +9,6 @@ interface Props {
     isLoading: boolean;
     onCopy: (key: string) => void;
     onCreateKey: () => void;
-    onDeleteKey: (id: number) => void;
 }
 
 export function ApiKeyList({
@@ -17,7 +16,6 @@ export function ApiKeyList({
     isLoading,
     onCopy,
     onCreateKey,
-    onDeleteKey,
 }: Props) {
     if (isLoading) {
         return (
@@ -28,7 +26,9 @@ export function ApiKeyList({
         );
     }
 
-    if (apiKeys.length === 0) {
+    const validKeys = (apiKeys ?? []).filter(Boolean);
+
+    if (validKeys.length === 0) {
         return (
             <p className="py-6 text-center text-sm text-muted-foreground">
                 No API keys yet.{" "}
@@ -42,12 +42,11 @@ export function ApiKeyList({
 
     return (
         <div className="space-y-3">
-            {apiKeys.map(apiKey => (
+            {validKeys.map(apiKey => (
                 <ApiKeyCard
                     key={apiKey.id}
                     apiKey={apiKey}
                     onCopy={onCopy}
-                    onDelete={onDeleteKey}
                 />
             ))}
         </div>

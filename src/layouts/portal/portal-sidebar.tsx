@@ -31,29 +31,29 @@ import { logout } from "@/services/auth";
 const mainNavItems = [
   {
     title: "Dashboard",
-    url: "/portal/dashboard",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Connections",
-    url: "/portal/connections",
+    url: "/connections",
     icon: Link2Icon,
   },
   {
     title: "Webhooks",
-    url: "/portal/webhooks",
+    url: "/webhooks",
     icon: WebhookIcon,
   },
   {
     title: "Usage",
-    url: "/portal/usage",
+    url: "/usage",
     icon: BarChart3Icon,
   },
 ];
 
 const accountNavItems = [
-  { title: "Billing", url: "/portal/billing", icon: CreditCardIcon },
-  { title: "Settings", url: "/portal/settings", icon: SettingsIcon },
+  { title: "Billing", url: "/billing", icon: CreditCardIcon },
+  { title: "Settings", url: "/settings", icon: SettingsIcon },
 ];
 
 export function PortalSidebar() {

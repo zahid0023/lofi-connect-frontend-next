@@ -1,98 +1,97 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-
-import { Button } from "@/components/ui/button";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
-import { type LoginDto, loginDto } from "@/validations/auth.dto";
-import { login } from "@/services/auth";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { login } from "@/services/auth"
 
-export function LoginForm() {
-  const router = useRouter();
+export function LoginForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({ user_name: "", password: "" })
 
-  const form = useForm<LoginDto>({
-    resolver: zodResolver(loginDto),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
 
-
-  async function onSubmit(data: LoginDto) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
     try {
-      await login({ user_name: data.email, password: data.password });
-      toast.success("Login successful");
-      router.push("/portal");
+      await login(form)
+      toast.success("Signed in successfully!")
+      router.push("/dashboard")
     } catch (err) {
-      toast.error("Invalid credentials");
+      toast.error(err instanceof Error ? err.message : "Login failed. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <FieldGroup className="gap-4">
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                aria-invalid={fieldState.invalid}
-                placeholder="john@example.com"
-                {...field}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <div className="flex items-center justify-between">
-                <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Link
-                  href="/forgot-password"
-                  className="text-primary text-sm hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                aria-invalid={fieldState.invalid}
-                placeholder="Enter your password"
-                autoComplete="off"
-                {...field}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-      </FieldGroup>
-      <Button
-        type="submit"
-        disabled={form.formState.isSubmitting}
-        className="mt-4 w-full"
-      >
-        {form.formState.isSubmitting && <Spinner />}
-        Sign in
-      </Button>
-    </form>
-  );
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Login to your account</CardTitle>
+          <CardDescription>Enter your email below to login to your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit}>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="user_name">Email</FieldLabel>
+                <Input
+                  id="user_name"
+                  name="user_name"
+                  type="email"
+                  placeholder="email@example.com"
+                  value={form.user_name}
+                  onChange={handleChange}
+                  required
+                />
+              </Field>
+
+              <Field>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <Link href="/forgot-password" className="text-primary text-sm hover:underline">
+                    Forgot your password?
+                  </Link>
+                </div>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                />
+              </Field>
+
+              <Field>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Signing in…" : "Sign in"}
+                </Button>
+              </Field>
+            </FieldGroup>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

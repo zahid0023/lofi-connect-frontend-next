@@ -111,9 +111,13 @@ export default function ContactSubscriptionPage() {
 
                                     <div className="flex items-end gap-1 mb-4">
                                         <span className="text-3xl font-bold">
-                                            {plan.currency.symbol}{plan.price.toFixed(2)}
+                                            {parseFloat(plan.price) === 0 ? "Free" : `$${parseFloat(plan.price).toFixed(2)}`}
                                         </span>
-                                        <span className="text-sm text-muted-foreground mb-0.5">/ mo</span>
+                                        {parseFloat(plan.price) > 0 && (
+                                            <span className="text-sm text-muted-foreground mb-0.5">
+                                                {plan.billing_cycle === "ANNUAL" ? "/ yr" : "/ mo"}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <ul className="space-y-2">

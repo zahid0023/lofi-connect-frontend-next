@@ -1,4 +1,4 @@
-import PortalDefaultPage from "@/app/(portal)/portal/page";
+import PortalDefaultPage from "@/app/(protected)/page";
 
 export default function page() {
     return (

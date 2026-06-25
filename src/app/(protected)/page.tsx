@@ -46,14 +46,14 @@ export default function PortalDefaultPage() {
       value: activeConnections.length,
       total: userConnections.length,
       icon: Link2Icon,
-      href: "/portal/connections",
+      href: "/connections",
       color: "text-primary",
     },
     {
       title: "Configured Webhooks",
       value: totalWebhooks,
       icon: WebhookIcon,
-      href: "/portal/webhooks",
+      href: "/webhooks",
       color: "text-success",
     },
     {
@@ -61,14 +61,14 @@ export default function PortalDefaultPage() {
       value: totalCalls.toLocaleString(),
       trend: "+12%",
       icon: ActivityIcon,
-      href: "/portal/usage",
+      href: "/usage",
       color: "text-warning",
     },
     {
       title: "Success Rate",
       value: `${((1 - totalErrors / totalCalls) * 100).toFixed(1)}%`,
       icon: TrendingUpIcon,
-      href: "/portal/usage",
+      href: "/usage",
       color: "text-chart-2",
     },
   ];
@@ -99,7 +99,7 @@ export default function PortalDefaultPage() {
               <CardDescription>Last 7 days</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/portal/usage">
+              <Link href="/usage">
                 View Details <ArrowUpRightIcon className="ml-1 h-3 w-3" />
               </Link>
             </Button>
@@ -158,7 +158,7 @@ export default function PortalDefaultPage() {
                     </p>
                   </div>
                   <Button size="sm" variant="outline" asChild>
-                    <Link href="/portal/connections">Fix</Link>
+                    <Link href="/connections">Fix</Link>
                   </Button>
                 </div>
               ))}
@@ -175,7 +175,7 @@ export default function PortalDefaultPage() {
             <CardDescription>Your subscription details</CardDescription>
           </div>
           <Button variant="outline" asChild>
-            <Link href="/portal/billing">Manage Billing</Link>
+            <Link href="/billing">Manage Billing</Link>
           </Button>
         </CardHeader>
         <CardContent>

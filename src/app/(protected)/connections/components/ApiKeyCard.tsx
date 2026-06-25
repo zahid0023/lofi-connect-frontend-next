@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ChevronDown, Copy, Eye, EyeOff, Link2, Building2, User, ShieldCheck, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronDown, Copy, Eye, EyeOff, Link2, MapPin, CheckCircle2, XCircle } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,10 +20,9 @@ import { initGhlConnection } from "@/services/connections";
 interface Props {
     apiKey: ApiKey;
     onCopy: (key: string) => void;
-    onDelete: (id: number) => void;
 }
 
-export function ApiKeyCard({ apiKey, onCopy, onDelete }: Props) {
+export function ApiKeyCard({ apiKey, onCopy }: Props) {
     const [visible, setVisible] = useState(false);
 
     const displayKey = visible && apiKey.app_key ? apiKey.app_key : apiKey.masked_key;
@@ -96,15 +95,6 @@ export function ApiKeyCard({ apiKey, onCopy, onDelete }: Props) {
                         >
                             <Copy className="h-3.5 w-3.5" />
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            title="Delete key"
-                            onClick={() => onDelete(apiKey.id)}
-                        >
-                            <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
                     </div>
                 </div>
 
@@ -133,31 +123,14 @@ export function ApiKeyCard({ apiKey, onCopy, onDelete }: Props) {
                     {ghl && (
                         <>
                             <Separator className="mb-2" />
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-muted-foreground">
+                            <div className="flex flex-col gap-1 text-muted-foreground">
                                 <div className="flex items-center gap-1.5">
-                                    <Building2 className="h-3 w-3 shrink-0" />
-                                    <span className="truncate">{ghl.sub_account_name}</span>
+                                    <MapPin className="h-3 w-3 shrink-0" />
+                                    <span className="truncate">{ghl.location_name}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <User className="h-3 w-3 shrink-0" />
-                                    <span className="truncate font-mono">{ghl.user_id}</span>
-                                </div>
-                                <div className="col-span-2 flex items-center gap-1.5 mt-0.5">
-                                    <span className="text-foreground font-medium">Account ID:</span>
-                                    <span className="font-mono truncate">{ghl.sub_account_id}</span>
-                                    {ghl.is_agency && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">Agency</Badge>
-                                    )}
-                                </div>
-                                <div className="col-span-2 flex items-start gap-1.5 mt-0.5">
-                                    <ShieldCheck className="h-3 w-3 shrink-0 mt-0.5" />
-                                    <div className="flex flex-wrap gap-1">
-                                        {ghl.scopes.split(" ").map(scope => (
-                                            <Badge key={scope} variant="secondary" className="text-[10px] px-1.5 py-0 font-mono">
-                                                {scope}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                                    <span className="text-foreground font-medium">Location ID:</span>
+                                    <span className="font-mono truncate">{ghl.location_id}</span>
                                 </div>
                             </div>
                         </>

@@ -7,13 +7,13 @@ import { ApiKeyList } from "./components/ApiKeyList";
 import { SubscribeDialog } from "./components/SubscribeDialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { ApiError } from "@/services/api";
 
 export default function ConnectionsPage() {
     const {
         apiKeys,
         isLoading,
         handleCreate,
-        handleDelete,
         copyToClipboard,
     } = useApiKeys();
 
@@ -28,10 +28,15 @@ export default function ConnectionsPage() {
                 setCreateDialogOpen(false);
                 setPlainKey(key);
             }
-        } catch {
-            // Backend indicated no subscription — show subscribe dialog
-            setCreateDialogOpen(false);
-            setSubscribeDialogOpen(true);
+        } catch (err) {
+            const isNoSubscription =
+                err instanceof ApiError && (err.code === "NO_ACTIVE_SUBSCRIPTION" || err.status === 422);
+            if (isNoSubscription) {
+                setCreateDialogOpen(false);
+                setSubscribeDialogOpen(true);
+            } else {
+                throw err; // let ApiKeyDialog display the error message inline
+            }
         }
     };
 
@@ -61,7 +66,6 @@ export default function ConnectionsPage() {
                 isLoading={isLoading}
                 onCopy={copyToClipboard}
                 onCreateKey={() => setCreateDialogOpen(true)}
-                onDeleteKey={handleDelete}
             />
 
             {/* Subscribe dialog — shown when backend rejects with no-subscription error */}
