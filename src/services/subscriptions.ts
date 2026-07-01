@@ -21,6 +21,7 @@ export interface SubscriptionPlan {
     is_public: boolean;
     description: string[];
     limits: PlanLimit[];
+    paddle_price_id: string; // Paddle Billing price ID, e.g. "pri_xxxxx"
 }
 
 export interface TenantSubscription {
@@ -42,12 +43,35 @@ export const getSubscriptionPlans = async (): Promise<SubscriptionPlan[]> => {
     return api.get<SubscriptionPlan[]>("/subscriptions/plans/public");
 };
 
-// POST /subscriptions/tenant-subscriptions  →  { "success": true, "id": 42 }
-export const createTenantSubscription = async (
+// POST /payments/checkout  →  { checkout_url, transaction_id }
+export const createCheckout = async (
     plan_id: number,
-): Promise<{ success: boolean; id: number }> => {
-    return api.post("/subscriptions/tenant-subscriptions", { plan_id });
+): Promise<{ checkout_url: string; transaction_id: string }> => {
+    return api.post("/payments/checkout", { plan_id });
 };
+
+export interface PaymentStatus {
+    subscription_status: "ACTIVE" | "TRIAL" | "CANCELLED" | "EXPIRED" | null;
+    provisioning_status: "PENDING" | "PROVISIONED" | "FAILED" | null;
+    active: boolean;
+}
+
+// GET /payments/status  →  { subscription_status, provisioning_status, active }
+export const getPaymentStatus = async (): Promise<PaymentStatus> => {
+    return api.get("/payments/status");
+};
+
+// Polls /payments/status until the subscription is active and provisioned.
+// Throws if activation doesn't complete within the allotted attempts.
+export async function waitForSubscriptionActive(maxAttempts = 10, intervalMs = 2000): Promise<PaymentStatus> {
+    for (let i = 0; i < maxAttempts; i++) {
+        const status = await getPaymentStatus();
+        if (status.active && status.provisioning_status === "PROVISIONED") return status;
+        if (i < maxAttempts - 1) await new Promise(r => setTimeout(r, intervalMs));
+    }
+    throw new Error("Subscription activation timed out");
+}
+
 
 // POST /subscriptions/tenant-subscriptions/upgrade  →  { "success": true, "id": 43 }
 export const upgradeSubscription = async (
