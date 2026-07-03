@@ -24,6 +24,25 @@ export interface SubscriptionPlan {
     paddle_price_id: string; // Paddle Billing price ID, e.g. "pri_xxxxx"
 }
 
+export type TenantSubscriptionStatus =
+    | "DRAFT"
+    | "CHECKOUT_STARTED"
+    | "TRIAL"
+    | "ACTIVE"
+    | "PROVISIONING_REQUIRED"
+    | "PROVISIONING_IN_PROGRESS"
+    | "PAST_DUE"
+    | "GRACE_PERIOD"
+    | "READ_ONLY"
+    | "SUSPENDED"
+    | "PAUSED"
+    | "CANCELLED"
+    | "EXPIRED"
+    | "REFUND_REQUESTED"
+    | "REFUNDED"
+    | "SYNC_ERROR"
+    | "REVIEW_REQUIRED";
+
 export interface TenantSubscription {
     id: number;
     user_id: number;
@@ -32,7 +51,7 @@ export interface TenantSubscription {
     plan_name: string;
     billing_cycle: "MONTHLY" | "QUARTERLY" | "ANNUAL" | "LIFETIME";
     price: string;
-    status: "ACTIVE" | "TRIAL" | "CANCELLED" | "EXPIRED";
+    status: TenantSubscriptionStatus;
     start_date: string;
     end_date: string | null;
     trial_ends_at: string | null;
@@ -51,7 +70,7 @@ export const createCheckout = async (
 };
 
 export interface PaymentStatus {
-    subscription_status: "ACTIVE" | "TRIAL" | "CANCELLED" | "EXPIRED" | null;
+    subscription_status: TenantSubscriptionStatus | null;
     provisioning_status: "PENDING" | "PROVISIONED" | "FAILED" | null;
     active: boolean;
 }

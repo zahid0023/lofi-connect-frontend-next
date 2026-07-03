@@ -81,7 +81,12 @@ export default function SubscriptionPlansPage() {
             </div>
 
             {mySubscription && (
-                <CurrentPlanBanner subscription={mySubscription} />
+                <CurrentPlanBanner
+                    subscription={mySubscription}
+                    onCancelled={() =>
+                        getMySubscription().catch(() => null).then(setMySubscription)
+                    }
+                />
             )}
 
             <PlanGrid

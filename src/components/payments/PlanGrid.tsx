@@ -18,7 +18,10 @@ export function PlanGrid({
 }: PlanGridProps) {
     const isActiveSub =
         currentSubscription?.status === "ACTIVE" ||
-        currentSubscription?.status === "TRIAL";
+        currentSubscription?.status === "TRIAL" ||
+        currentSubscription?.status === "GRACE_PERIOD" ||
+        currentSubscription?.status === "PROVISIONING_REQUIRED" ||
+        currentSubscription?.status === "PROVISIONING_IN_PROGRESS";
 
     if (plans.length === 0) {
         return (
